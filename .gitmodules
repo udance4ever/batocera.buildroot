@@ -1,0 +1,3 @@
+[submodule "br-pbuilder"]
+	path = br-pbuilder
+	url = https://github.com/paguilar/br-pbuilder.git

@@ -34,9 +34,12 @@ main() {
     trap "error 'unexpected error while generating ${ofile}\n'" ERR
 
     mkdir -p "${outputdir}"
-    do_validate "${outputdir}" ${@//:/ }
-    do_mk "${outputdir}"
-    do_kconfig "${outputdir}"
+    {
+        flock -x 3
+        do_validate "${outputdir}" ${@//:/ };
+        do_mk "${outputdir}";
+        do_kconfig "${outputdir}";
+    } 3>.pbuilder-br2-external-lock
 }
 
 # Validates the br2-external trees passed as arguments. Makes each of

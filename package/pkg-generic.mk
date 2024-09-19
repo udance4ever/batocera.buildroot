@@ -334,25 +334,30 @@ $(BUILD_DIR)/%/.stamp_staging_installed:
 				$(addprefix $(STAGING_DIR)/usr/bin/,$($(PKG)_CONFIG_SCRIPTS)) ;\
 	fi
 	@$(call MESSAGE,"Fixing libtool files")
-	for la in $$(find $(STAGING_DIR)/usr/lib* -name "*.la"); do \
-		cp -a "$${la}" "$${la}.fixed" && \
-		$(SED) "s:$(BASE_DIR):@BASE_DIR@:g" \
-			-e "s:$(STAGING_DIR):@STAGING_DIR@:g" \
-			$(if $(TOOLCHAIN_EXTERNAL_INSTALL_DIR),\
-				-e "s:$(TOOLCHAIN_EXTERNAL_INSTALL_DIR):@TOOLCHAIN_EXTERNAL_INSTALL_DIR@:g") \
-			-e "s:\(['= ]\)/usr:\\1@STAGING_DIR@/usr:g" \
-			-e "s:\(['= ]\)/lib:\\1@STAGING_DIR@/lib:g" \
-			$(if $(TOOLCHAIN_EXTERNAL_INSTALL_DIR),\
-				-e "s:@TOOLCHAIN_EXTERNAL_INSTALL_DIR@:$(TOOLCHAIN_EXTERNAL_INSTALL_DIR):g") \
-			-e "s:@STAGING_DIR@:$(STAGING_DIR):g" \
-			-e "s:@BASE_DIR@:$(BASE_DIR):g" \
-			"$${la}.fixed" && \
-		if cmp -s "$${la}" "$${la}.fixed"; then \
-			rm -f "$${la}.fixed"; \
-		else \
-			mv "$${la}.fixed" "$${la}"; \
-		fi || exit 1; \
-	done
+	$(Q)( \
+		{ \
+			flock -x 3; \
+			for la in $$(find $(STAGING_DIR)/usr/lib* -name "*.la"); do \
+				cp -a "$${la}" "$${la}.fixed" && \
+				$(SED) "s:$(BASE_DIR):@BASE_DIR@:g" \
+					-e "s:$(STAGING_DIR):@STAGING_DIR@:g" \
+					$(if $(TOOLCHAIN_EXTERNAL_INSTALL_DIR),\
+						-e "s:$(TOOLCHAIN_EXTERNAL_INSTALL_DIR):@TOOLCHAIN_EXTERNAL_INSTALL_DIR@:g") \
+					-e "s:\(['= ]\)/usr:\\1@STAGING_DIR@/usr:g" \
+					-e "s:\(['= ]\)/lib:\\1@STAGING_DIR@/lib:g" \
+					$(if $(TOOLCHAIN_EXTERNAL_INSTALL_DIR),\
+						-e "s:@TOOLCHAIN_EXTERNAL_INSTALL_DIR@:$(TOOLCHAIN_EXTERNAL_INSTALL_DIR):g") \
+					-e "s:@STAGING_DIR@:$(STAGING_DIR):g" \
+					-e "s:@BASE_DIR@:$(BASE_DIR):g" \
+					"$${la}.fixed" && \
+				if cmp -s "$${la}" "$${la}.fixed"; then \
+					rm -f "$${la}.fixed"; \
+				else \
+					mv "$${la}.fixed" "$${la}"; \
+				fi || exit 1; \
+			done; \
+		} 3>.pbuilder-pkg-generic-lock; \
+	)
 	@$(call step_end,install-staging)
 	$(Q)touch $@
 
