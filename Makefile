@@ -939,7 +939,7 @@ pbuilder:
 	@cd $(CONFIG_DIR); \
 	$(TOPDIR)/support/scripts/pbuilder.py $(BR2_CONFIG) $(BUILD_DIR) $(TOPDIR)/utils/pbuilder || \
 		{ echo "Script $(TOPDIR)/support/scripts/pbuilder.py failed!"; exit 1; }; \
-	CONFIG_DIR=$(CONFIG_DIR) BR2_EXTERNAL=$(BR2_EXTERNAL) BUILD_DIR=$(BUILD_DIR) $(TOPDIR)/utils/pbuilder/src/pbuilder -f .pbuilder.deps
+	CONFIG_DIR=$(CONFIG_DIR) BR2_EXTERNAL=$(BR2_EXTERNAL) BUILD_DIR=$(BUILD_DIR) $(TOPDIR)/utils/pbuilder/src/pbuilder $(PBUILDER_OPTS) -f .pbuilder.deps
 
 .PHONY: pkg-stats
 pkg-stats:
